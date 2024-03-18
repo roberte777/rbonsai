@@ -6,10 +6,7 @@ use crossterm::{
     style::Print,
     terminal::{Clear, ClearType},
 };
-use ronsai::{
-    base::draw_base,
-    bonsai::{grow_tree, Config},
-};
+use ronsai::{base::draw_base, bonsai::grow_tree, Config};
 fn main() {
     let mut stdout = stdout();
     execute!(stdout, Clear(ClearType::All),).unwrap();

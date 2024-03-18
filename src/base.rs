@@ -6,7 +6,7 @@ use crossterm::{
     terminal,
 };
 
-pub fn draw_base(base_type: i32) {
+pub fn draw_base(base_type: u8) {
     let mut stdout = stdout();
     let (cols, rows) = terminal::size().unwrap(); // Get terminal size for centering
 
@@ -44,9 +44,9 @@ pub fn draw_base(base_type: i32) {
             let lines = ["(---./~~~\\.--)", " (           ) ", "  (_________)  "];
             let base_width = 15; // The maximum width of the base art for base type 2
             for (i, line) in lines.iter().enumerate() {
-                let line_length = line.chars().count() as u16;
-                let start_pos = (cols / 2) - (base_width / 2) + ((base_width - line_length) / 2);
-                execute!(stdout, cursor::MoveTo(start_pos, i as u16 + 1),).unwrap();
+                let start_pos = (cols / 2) - (base_width / 2);
+                let y = rows - (lines.len() as u16 - i as u16);
+                execute!(stdout, cursor::MoveTo(start_pos, y),).unwrap();
                 // Similarly, adjust color settings and print each line
                 execute!(stdout, Print(line),).unwrap();
             }

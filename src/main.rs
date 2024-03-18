@@ -12,11 +12,13 @@ fn main() {
     execute!(stdout, Clear(ClearType::All),).unwrap();
     execute!(stdout, MoveTo(0, 0), Print("0,0")).unwrap();
 
-    draw_base(1); // Example usage
+    let base_type: u8 = 2;
+    draw_base(base_type); // Example usage
     let config = Config {
         verbosity: 1,
         life_start: 32,
         multiplier: 3,
+        base_type,
     };
     grow_tree(&config);
     // move cursor to bottom of terminal

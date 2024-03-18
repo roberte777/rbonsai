@@ -9,4 +9,6 @@ pub struct Config {
     pub life_start: i32,
     // branch multiplier; higher -> less branches
     pub multiplier: i32,
+    /// base type
+    pub base_type: u8,
 }

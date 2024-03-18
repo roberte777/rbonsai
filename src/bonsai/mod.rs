@@ -2,9 +2,7 @@ pub mod utility;
 use crossterm::{
     cursor::{self, MoveTo},
     execute,
-    style::{
-        Color, Colors, Print, SetColors,
-    },
+    style::{Color, Colors, Print, SetColors},
     terminal::{self},
     QueueableCommand,
 };
@@ -32,11 +30,17 @@ struct Counters {
     shoots: i32,
     branches: i32,
     shoot_counter: i32,
+    tree_bottom: u16,
 }
 
 pub fn grow_tree(config: &Config) {
     let mut stdout = stdout();
-    let (max_x, max_y) = terminal::size().unwrap();
+    let (max_x, mut max_y) = terminal::size().unwrap();
+    max_y = match config.base_type {
+        1 => max_y - 5,
+        2 => max_y - 4,
+        _ => max_y,
+    };
 
     // Reset counters
     let mut counters = Counters {
@@ -44,6 +48,7 @@ pub fn grow_tree(config: &Config) {
         branches: 0,
         // Initialize shoot counter to a random value
         shoot_counter: (rand::random::<i32>() % 3) + 1,
+        tree_bottom: max_y,
     };
 
     if config.verbosity > 0 {
@@ -59,7 +64,7 @@ pub fn grow_tree(config: &Config) {
     branch(
         config,
         &mut counters,
-        max_y as i32 - 5,
+        max_y as i32,
         (max_x / 2) as i32,
         BranchType::Trunk,
         config.life_start,
@@ -93,7 +98,7 @@ fn branch(
         let (dx, mut dy) = set_deltas(&branch_type, life, age, config.multiplier);
         let (max_x, max_y) = terminal::size().unwrap();
 
-        if dy > 0 && y > (max_y as i32 - 6) {
+        if dy > 0 && y > (counters.tree_bottom as i32 - 1) {
             dy -= 1;
         } // reduce dy if too close to the ground
           // Ensure x and y are within terminal bounds

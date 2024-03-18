@@ -273,7 +273,7 @@ fn set_deltas(branch_type: &BranchType, life: i32, age: i32, multiplier: i32) ->
 
     (dx, dy)
 }
-fn choose_string(conf: &Config, branch_type: &BranchType, life: i32, dx: i32, dy: i32) -> String {
+fn choose_string(_conf: &Config, branch_type: &BranchType, life: i32, dx: i32, dy: i32) -> String {
     let mut branch_str = match branch_type {
         BranchType::Trunk => match (dx, dy) {
             (0, 0) => "/~".to_string(),

@@ -3,8 +3,7 @@ use crossterm::{
     cursor::{self, MoveTo},
     execute,
     style::{
-        Attribute, Color, Colors, Print, SetAttribute, SetBackgroundColor, SetColors,
-        SetForegroundColor,
+        Color, Colors, Print, SetColors,
     },
     terminal::{self},
     QueueableCommand,

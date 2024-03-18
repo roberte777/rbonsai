@@ -3,7 +3,6 @@ use std::io::stdout;
 use crossterm::{
     execute,
     style::{Attribute, Color, SetAttribute, SetBackgroundColor, SetForegroundColor},
-    ExecutableCommand,
 };
 use rand::Rng;
 

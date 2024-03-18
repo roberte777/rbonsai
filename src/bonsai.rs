@@ -5,8 +5,7 @@ use crossterm::{
         Attribute, Color, Colors, Print, SetAttribute, SetBackgroundColor, SetColors,
         SetForegroundColor,
     },
-    terminal::{self},
-    Command, QueueableCommand,
+    terminal::{self}, QueueableCommand,
 };
 use rand::Rng;
 use std::io::{stdout, Write};

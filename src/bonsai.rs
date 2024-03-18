@@ -96,41 +96,46 @@ fn branch(
 
         if life < 3 {
             branch(config, counters, y, x, BranchType::Dead, life);
-        } else if branch_type == BranchType::Trunk && life < (config.multiplier + 2) {
-            branch(config, counters, y, x, BranchType::Dying, life);
-        } else if (branch_type == BranchType::ShootLeft || branch_type == BranchType::ShootRight)
-            && life < (config.multiplier + 2)
-        {
-            branch(config, counters, y, x, BranchType::Dying, life);
-        } else if branch_type == BranchType::Trunk
-            && (rng.gen_range(0..3) == 0 || life % config.multiplier == 0)
-        {
-            if rng.gen_range(0..8) == 0 && life > 7 {
-                shoot_cooldown = config.multiplier * 2;
-                let random_life = life + rng.gen_range(-2..3); // equivalent to rand() % 5 - 2 in C
-                branch(config, counters, y, x, BranchType::Trunk, random_life);
-            } else if shoot_cooldown <= 0 {
-                shoot_cooldown = config.multiplier * 2;
-                let shoot_life = life + config.multiplier;
-                counters.shoots += 1;
-                counters.shoot_counter += 1;
-                // Assuming verbosity is a boolean for simplicity, adjust as necessary
-                if config.verbosity > 0 {
-                    let _ = execute!(
-                        stdout,
-                        cursor::MoveTo(5, 4),
-                        Print(format!("shoots: {:02}", counters.shoots)),
-                    );
+        } else {
+            match branch_type {
+                BranchType::Trunk | BranchType::ShootLeft | BranchType::ShootRight
+                    if life < (config.multiplier + 2) =>
+                {
+                    branch(config, counters, y, x, BranchType::Dying, life);
                 }
-                let shoot_direction = if counters.shoot_counter % 2 == 0 {
-                    BranchType::ShootLeft
-                } else {
-                    BranchType::ShootRight
-                };
-                branch(config, counters, y, x, shoot_direction, shoot_life);
+                BranchType::Trunk
+                    if (rng.gen_range(0..3) == 0 || life % config.multiplier == 0) =>
+                {
+                    if rng.gen_range(0..8) == 0 && life > 7 {
+                        shoot_cooldown = config.multiplier * 2;
+                        let random_life = life + rng.gen_range(-2..3);
+                        branch(config, counters, y, x, BranchType::Trunk, random_life);
+                    } else if shoot_cooldown <= 0 {
+                        shoot_cooldown = config.multiplier * 2;
+                        let shoot_life = life + config.multiplier;
+                        counters.shoots += 1;
+                        counters.shoot_counter += 1;
+                        if config.verbosity > 0 {
+                            let _ = execute!(
+                                stdout,
+                                cursor::MoveTo(5, 4),
+                                Print(format!("shoots: {:02}", counters.shoots)),
+                            );
+                        }
+                        let shoot_direction = if counters.shoot_counter % 2 == 0 {
+                            BranchType::ShootLeft
+                        } else {
+                            BranchType::ShootRight
+                        };
+                        branch(config, counters, y, x, shoot_direction, shoot_life);
+                    }
+                }
+                _ => {}
             }
         }
+
         shoot_cooldown -= 1;
+
         if config.verbosity > 0 {
             let type_str = match branch_type {
                 BranchType::Trunk => "Trunk",

@@ -194,7 +194,7 @@ fn branch(
 
 fn set_deltas(branch_type: &BranchType, life: i32, age: i32, multiplier: i32) -> (i32, i32) {
     let mut rng = rand::thread_rng();
-    let (mut dx, mut dy): (i32, i32) = (0, 0);
+    let (dx, dy): (i32, i32);
 
     match branch_type {
         BranchType::Trunk => {

@@ -1,15 +1,19 @@
 use crossterm::{
     cursor::{self, MoveTo},
     execute,
-    style::{Color, Print, SetForegroundColor},
+    style::{
+        Attribute, Color, Colors, Print, SetAttribute, SetBackgroundColor, SetColors,
+        SetForegroundColor,
+    },
     terminal::{self},
-    QueueableCommand,
+    Command, QueueableCommand,
 };
 use rand::Rng;
 use std::io::{stdout, Write};
 pub struct Config {
     pub verbosity: i32,
     pub life_start: i32,
+    // branch multiplier; higher -> more
     pub multiplier: i32,
 }
 
@@ -176,19 +180,10 @@ fn branch(
         // Drawing the branch part
         let branch_str = choose_string(config, &branch_type, life, dx, dy);
         // Example to set color, adjust as needed
-        execute!(
-            stdout,
-            SetForegroundColor(match branch_type {
-                BranchType::Trunk => Color::DarkGrey,
-                BranchType::ShootLeft | BranchType::ShootRight => Color::Green,
-                _ => Color::Red,
-            }),
-        )
-        .unwrap();
+        choose_color(&branch_type).unwrap();
         execute!(stdout, MoveTo(x as u16, y as u16), Print(branch_str),).unwrap();
-
-        // Assuming an update_screen function exists to flush stdout and possibly handle screen refresh
-        stdout.flush().unwrap();
+        // reset color
+        execute!(stdout, SetColors(Colors::new(Color::Reset, Color::Reset)),).unwrap();
     }
 }
 
@@ -318,4 +313,65 @@ fn choose_string(_conf: &Config, branch_type: &BranchType, life: i32, dx: i32, d
     }
 
     branch_str
+}
+
+fn choose_color(branch_type: &BranchType) -> Result<(), std::io::Error> {
+    let mut rng = rand::thread_rng();
+    let mut stdout = stdout();
+
+    // Default background color
+    let bg = Color::Reset; // Using Reset to use terminal's default
+
+    match branch_type {
+        BranchType::Trunk | BranchType::ShootLeft | BranchType::ShootRight => {
+            if rng.gen_range(0..2) == 0 {
+                execute!(
+                    stdout,
+                    SetAttribute(Attribute::Bold),
+                    SetForegroundColor(Color::AnsiValue(11)),
+                    SetBackgroundColor(bg),
+                )?;
+            } else {
+                execute!(
+                    stdout,
+                    SetForegroundColor(Color::AnsiValue(3)),
+                    SetBackgroundColor(bg),
+                )?;
+            }
+        }
+        BranchType::Dying => {
+            if rng.gen_range(0..10) == 0 {
+                execute!(
+                    stdout,
+                    SetAttribute(Attribute::Bold),
+                    SetForegroundColor(Color::AnsiValue(2)),
+                    SetBackgroundColor(bg),
+                )?;
+            } else {
+                execute!(
+                    stdout,
+                    SetForegroundColor(Color::AnsiValue(2)),
+                    SetBackgroundColor(bg),
+                )?;
+            }
+        }
+        BranchType::Dead => {
+            if rng.gen_range(0..3) == 0 {
+                execute!(
+                    stdout,
+                    SetAttribute(Attribute::Bold),
+                    SetForegroundColor(Color::AnsiValue(10)),
+                    SetBackgroundColor(bg),
+                )?;
+            } else {
+                execute!(
+                    stdout,
+                    SetForegroundColor(Color::AnsiValue(10)),
+                    SetBackgroundColor(bg),
+                )?;
+            }
+        }
+    }
+
+    Ok(())
 }

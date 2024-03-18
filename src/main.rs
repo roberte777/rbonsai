@@ -19,7 +19,7 @@ fn main() {
     let config = Config {
         verbosity: 1,
         life_start: 32,
-        multiplier: 2,
+        multiplier: 3,
     };
     grow_tree(&config);
     // move cursor to bottom of terminal

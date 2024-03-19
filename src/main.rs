@@ -8,8 +8,12 @@ use crossterm::{
 };
 use ronsai::{base::draw_base, bonsai::grow_tree, Config};
 fn main() {
+    let (_, rows) = crossterm::terminal::size().unwrap();
+    for _ in 0..rows {
+        println!();
+    }
     let mut stdout = stdout();
-    execute!(stdout, Clear(ClearType::All),).unwrap();
+    // execute!(stdout, Clear(ClearType::All),).unwrap();
     execute!(stdout, MoveTo(0, 0), Print("0,0")).unwrap();
 
     let base_type: u8 = 2;
@@ -22,7 +26,6 @@ fn main() {
     };
     grow_tree(&config);
     // move cursor to bottom of terminal
-    let (_, rows) = crossterm::terminal::size().unwrap();
     execute!(stdout, cursor::MoveTo(0, rows - 1),).unwrap();
     println!();
 }

@@ -51,7 +51,7 @@ pub fn grow_tree(config: &Config) {
         tree_bottom: max_y,
     };
 
-    if config.verbosity > 0 {
+    if config.verbose {
         execute!(
             stdout,
             cursor::MoveTo(5, 2),
@@ -86,11 +86,13 @@ fn branch(
 
     // This is a highly simplified loop to mimic the growth logic
     while life > 0 {
-        stdout
-            .queue(MoveTo(5, 3))
-            .unwrap()
-            .queue(Print(format!("starting life: {}", life)))
-            .unwrap();
+        if config.verbose {
+            stdout
+                .queue(MoveTo(5, 3))
+                .unwrap()
+                .queue(Print(format!("starting life: {}", life)))
+                .unwrap();
+        }
         // Decrement life
         life -= 1;
         let age = config.life_start - life;
@@ -127,7 +129,7 @@ fn branch(
                         let shoot_life = life + config.multiplier;
                         counters.shoots += 1;
                         counters.shoot_counter += 1;
-                        if config.verbosity > 0 {
+                        if config.verbose {
                             let _ = execute!(
                                 stdout,
                                 cursor::MoveTo(5, 4),
@@ -148,7 +150,7 @@ fn branch(
 
         shoot_cooldown -= 1;
 
-        if config.verbosity > 0 {
+        if config.verbose {
             let type_str = match branch_type {
                 BranchType::Trunk => "Trunk",
                 BranchType::ShootLeft => "ShootLeft",
@@ -185,6 +187,10 @@ fn branch(
         x += dx;
         y += dy;
 
+        if x < 0 || x as u16 >= max_x || y < 0 || y as u16 >= max_y {
+            continue;
+        }
+
         // Drawing the branch part
         let branch_str = choose_string(config, &branch_type, life, dx, dy);
         // Example to set color, adjust as needed
@@ -192,5 +198,8 @@ fn branch(
         execute!(stdout, MoveTo(x as u16, y as u16), Print(branch_str),).unwrap();
         // reset color
         execute!(stdout, SetColors(Colors::new(Color::Reset, Color::Reset)),).unwrap();
+        if config.live {
+            std::thread::sleep(std::time::Duration::from_millis(50));
+        }
     }
 }

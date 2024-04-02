@@ -24,4 +24,8 @@ pub struct Config {
     /// The branch multiplier; higher -> less branches
     #[arg(short, long, default_value_t = 3)]
     multiplier: i32,
+
+    /// The message to display
+    #[arg(short = 'M', long)]
+    pub message: Option<String>,
 }

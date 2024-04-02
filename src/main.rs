@@ -8,7 +8,7 @@ use crossterm::{
 };
 use ronsai::{
     base::draw_base,
-    bonsai::{grow_tree},
+    bonsai::{grow_tree, utility::create_message_window},
     Config,
 };
 
@@ -27,7 +27,9 @@ fn main() {
     let _base_type: u8 = 1;
     draw_base(&args);
     grow_tree(&args);
-    // create_message_window("testing a really long message to see what happens").unwrap();
+    if let Some(message) = &args.message {
+        create_message_window(message).unwrap();
+    }
     // move cursor to bottom of terminal
     execute!(stdout, cursor::MoveTo(0, rows - 1),).unwrap();
     println!();

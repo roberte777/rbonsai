@@ -7,7 +7,7 @@ use crossterm::{
     cursor::MoveTo,
     execute, queue,
     style::{Attribute, Color, Print, SetAttribute, SetBackgroundColor, SetForegroundColor},
-    terminal::{size},
+    terminal::size,
 };
 use rand::Rng;
 
@@ -223,10 +223,10 @@ pub fn create_message_window(message: &str) -> Result<(), Box<dyn Error>> {
     // Calculate box dimensions based on message length
     let message_length = message.chars().count() as u16;
     let (box_width, box_height) = if message_length + 3 <= (0.25 * max_x as f32) as u16 {
-        (message_length + 1, 1)
+        (message_length + 1, 0)
     } else {
         let width = (0.25 * max_x as f32) as u16;
-        let height = (message_length / width) + (message_length / width);
+        let height = (message_length / width);
         (width, height)
     };
 
@@ -280,7 +280,7 @@ pub fn create_message_window(message: &str) -> Result<(), Box<dyn Error>> {
         if current_line.len() + word.len() > box_width as usize {
             queue!(
                 stdout,
-                MoveTo(message_x_start + 1, message_y_start + line_count as u16 + 1),
+                MoveTo(message_x_start + 1, message_y_start + line_count as u16),
                 Print(&current_line)
             )?;
             current_line.clear();

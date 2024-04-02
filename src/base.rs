@@ -1,8 +1,7 @@
 use std::io::{stdout, Write};
 
 use crossterm::{
-    cursor::{self, MoveTo},
-    execute, queue,
+    cursor::{MoveTo}, queue,
     style::{Color, Print, SetAttribute, SetBackgroundColor, SetForegroundColor},
     terminal,
 };

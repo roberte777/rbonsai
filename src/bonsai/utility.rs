@@ -7,7 +7,7 @@ use crossterm::{
     cursor::MoveTo,
     execute, queue,
     style::{Attribute, Color, Print, SetAttribute, SetBackgroundColor, SetForegroundColor},
-    terminal::{size, Clear},
+    terminal::{size},
 };
 use rand::Rng;
 

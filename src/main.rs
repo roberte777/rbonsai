@@ -21,8 +21,9 @@ fn main() {
         println!();
     }
     let mut stdout = stdout();
-    // execute!(stdout, Clear(ClearType::All),).unwrap();
-    execute!(stdout, MoveTo(0, 0), Print("0,0")).unwrap();
+    if args.verbose {
+        execute!(stdout, MoveTo(0, 0), Print("0,0")).unwrap();
+    }
 
     let _base_type: u8 = 1;
     draw_base(&args);

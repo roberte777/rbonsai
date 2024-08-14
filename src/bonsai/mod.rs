@@ -12,6 +12,8 @@ use utility::{choose_color, choose_string, set_deltas};
 
 use crate::Config;
 
+use self::utility::Style;
+
 /// The different types of each symbol
 pub(crate) enum BranchType {
     /// The main trunk of the tree
@@ -69,6 +71,13 @@ pub fn grow_tree(config: &Config) {
         BranchType::Trunk,
         config.life,
     );
+}
+
+pub struct Val {
+    pub style: Style,
+    pub char: String,
+    pub x: u16,
+    pub y: u16,
 }
 
 fn branch(
@@ -194,7 +203,7 @@ fn branch(
         // Drawing the branch part
         let branch_str = choose_string(config, &branch_type, life, dx, dy);
         // Example to set color, adjust as needed
-        choose_color(&branch_type).unwrap();
+        let _style = choose_color(&branch_type).unwrap();
         execute!(stdout, MoveTo(x as u16, y as u16), Print(branch_str),).unwrap();
         // reset color
         execute!(stdout, SetColors(Colors::new(Color::Reset, Color::Reset)),).unwrap();

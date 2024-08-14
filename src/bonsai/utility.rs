@@ -154,12 +154,23 @@ pub(crate) fn choose_string(
     branch_str
 }
 
-pub(crate) fn choose_color(branch_type: &BranchType) -> Result<(), std::io::Error> {
+pub struct Style {
+    attribute: Attribute,
+    foreground_color: Color,
+    background_color: Color,
+}
+
+pub(crate) fn choose_color(branch_type: &BranchType) -> Result<Style, std::io::Error> {
     let mut rng = rand::thread_rng();
     let mut stdout = stdout();
 
     // Default background color
     let bg = Color::Reset; // Using Reset to use terminal's default
+    let mut style = Style {
+        attribute: Attribute::Reset,
+        foreground_color: Color::Reset,
+        background_color: bg,
+    };
 
     match branch_type {
         BranchType::Trunk | BranchType::ShootLeft | BranchType::ShootRight => {
@@ -170,12 +181,15 @@ pub(crate) fn choose_color(branch_type: &BranchType) -> Result<(), std::io::Erro
                     SetForegroundColor(Color::AnsiValue(11)),
                     SetBackgroundColor(bg),
                 )?;
+                style.attribute = Attribute::Bold;
+                style.foreground_color = Color::AnsiValue(11);
             } else {
                 execute!(
                     stdout,
                     SetForegroundColor(Color::AnsiValue(3)),
                     SetBackgroundColor(bg),
                 )?;
+                style.foreground_color = Color::AnsiValue(3);
             }
         }
         BranchType::Dying => {
@@ -186,12 +200,15 @@ pub(crate) fn choose_color(branch_type: &BranchType) -> Result<(), std::io::Erro
                     SetForegroundColor(Color::AnsiValue(2)),
                     SetBackgroundColor(bg),
                 )?;
+                style.attribute = Attribute::Bold;
+                style.foreground_color = Color::AnsiValue(2);
             } else {
                 execute!(
                     stdout,
                     SetForegroundColor(Color::AnsiValue(2)),
                     SetBackgroundColor(bg),
                 )?;
+                style.foreground_color = Color::AnsiValue(2);
             }
         }
         BranchType::Dead => {
@@ -202,17 +219,20 @@ pub(crate) fn choose_color(branch_type: &BranchType) -> Result<(), std::io::Erro
                     SetForegroundColor(Color::AnsiValue(10)),
                     SetBackgroundColor(bg),
                 )?;
+                style.attribute = Attribute::Bold;
+                style.foreground_color = Color::AnsiValue(10);
             } else {
                 execute!(
                     stdout,
                     SetForegroundColor(Color::AnsiValue(10)),
                     SetBackgroundColor(bg),
                 )?;
+                style.foreground_color = Color::AnsiValue(10);
             }
         }
     }
 
-    Ok(())
+    Ok(style)
 }
 pub fn create_message_window(message: &str) -> Result<(), Box<dyn Error>> {
     let mut stdout = stdout();

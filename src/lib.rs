@@ -20,7 +20,7 @@ pub struct Config {
     #[arg(short, long, default_value_t = 4.)]
     pub wait: f64,
     /// Screensaver mode: equivalent to -li and quit on any keypress
-    #[arg(short, long, default_value_t = false)]
+    #[arg(short = 'S', long, default_value_t = false)]
     pub screensaver: bool,
     /// Attach message next to tree
     #[arg(short, long)]

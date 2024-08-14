@@ -36,7 +36,7 @@ struct Counters {
 pub fn grow_tree(config: &Config) {
     let mut stdout = stdout();
     let (max_x, mut max_y) = terminal::size().unwrap();
-    max_y = match config.base_type {
+    max_y = match config.base {
         1 => max_y - 5,
         2 => max_y - 4,
         _ => max_y,
@@ -67,7 +67,7 @@ pub fn grow_tree(config: &Config) {
         max_y as i32,
         (max_x / 2) as i32,
         BranchType::Trunk,
-        config.life_start,
+        config.life,
     );
 }
 
@@ -95,7 +95,7 @@ fn branch(
         }
         // Decrement life
         life -= 1;
-        let age = config.life_start - life;
+        let age = config.life - life;
 
         let (dx, mut dy) = set_deltas(&branch_type, life, age, config.multiplier);
         let (max_x, max_y) = terminal::size().unwrap();

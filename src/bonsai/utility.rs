@@ -226,7 +226,7 @@ pub fn create_message_window(message: &str) -> Result<(), Box<dyn Error>> {
         (message_length + 1, 0)
     } else {
         let width = (0.25 * max_x as f32) as u16;
-        let height = (message_length / width);
+        let height = message_length / width;
         (width, height)
     };
 

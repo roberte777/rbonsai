@@ -1,7 +1,8 @@
 use std::io::{stdout, Write};
 
 use crossterm::{
-    cursor::{MoveTo}, queue,
+    cursor::MoveTo,
+    queue,
     style::{Color, Print, SetAttribute, SetBackgroundColor, SetForegroundColor},
     terminal,
 };
@@ -9,7 +10,7 @@ use crossterm::{
 use crate::Config;
 
 pub fn draw_base(config: &Config) {
-    let base_type = config.base_type;
+    let base_type = config.base;
     let mut stdout = stdout();
     let (cols, rows) = terminal::size().unwrap(); // Get terminal size for centering
 

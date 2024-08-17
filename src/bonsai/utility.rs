@@ -262,30 +262,30 @@ pub fn create_message_window(message: &str) -> Result<(), Box<dyn Error>> {
         MoveTo(border_x_start, border_y_start),
         SetForegroundColor(Color::White),
         SetBackgroundColor(Color::Reset),
-        Print("┌"),
+        Print("+"),
         MoveTo(border_x_start + num_cols, border_y_start),
-        Print("┐"),
+        Print("+"),
         MoveTo(border_x_start, border_y_start + num_lines),
-        Print("└"),
+        Print("+"),
         MoveTo(border_x_start + num_cols, border_y_start + num_lines),
-        Print("┘")
+        Print("+"),
     )?;
     for i in 1..num_cols {
         queue!(
             stdout,
             MoveTo(border_x_start + i, border_y_start),
-            Print("─"),
+            Print("-"),
             MoveTo(border_x_start + i, border_y_start + num_lines),
-            Print("─")
+            Print("-"),
         )?;
     }
     for i in 1..num_lines {
         queue!(
             stdout,
             MoveTo(border_x_start, border_y_start + i),
-            Print("│"),
+            Print("|"),
             MoveTo(border_x_start + num_cols, border_y_start + i),
-            Print("│")
+            Print("|"),
         )?;
     }
 

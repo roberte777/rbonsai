@@ -269,7 +269,6 @@ pub fn draw_tree(config: &Config, tree: &Vec<Val>) {
             let mut finished = false;
             while start.elapsed() < Duration::from_secs_f64(config.time) {
                 if check_key_press() {
-                    println!("'q' key pressed, exiting...");
                     finished = true;
                     break;
                 }

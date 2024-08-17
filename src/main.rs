@@ -46,6 +46,7 @@ fn main() {
         init(&args);
         let tree = grow_tree(&args, &mut rng);
         draw_tree(&args, &tree);
+
         if let Some(message) = &args.message {
             create_message_window(message).unwrap();
         }
@@ -56,7 +57,6 @@ fn main() {
         let mut finished = false;
         while start.elapsed() < Duration::from_secs_f64(args.wait) {
             if check_key_press() {
-                println!("'q' key pressed, exiting...");
                 finished = true;
                 break;
             }
@@ -70,6 +70,7 @@ fn main() {
 
     let (_, rows) = crossterm::terminal::size().unwrap();
     if args.print {
+        args.live = false;
         execute!(stdout, LeaveAlternateScreen).unwrap();
         for _ in 0..rows {
             println!();
@@ -80,12 +81,13 @@ fn main() {
         if let Some(message) = &args.message {
             create_message_window(message).unwrap();
         }
+        execute!(stdout, MoveTo(0, rows - 1),).unwrap();
+        println!();
     } else if let Event::Key(_) = event::read().unwrap() {
         execute!(stdout, LeaveAlternateScreen).unwrap();
     }
     // move cursor to bottom of terminal
     execute!(stdout, MoveTo(0, rows - 1),).unwrap();
-    println!();
     let _ = disable_raw_mode();
     execute!(stdout, cursor::Show).unwrap();
 }

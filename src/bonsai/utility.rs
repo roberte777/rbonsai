@@ -1,15 +1,17 @@
 use std::{
     error::Error,
     io::{stdout, Write},
+    time::Duration,
 };
 
 use crossterm::{
     cursor::MoveTo,
+    event::{self, Event, KeyCode},
     execute, queue,
     style::{Attribute, Color, Print, SetAttribute, SetBackgroundColor, SetForegroundColor},
     terminal::size,
 };
-use rand::Rng;
+use rand::{rngs::StdRng, Rng};
 
 use crate::Config;
 
@@ -20,8 +22,8 @@ pub(crate) fn set_deltas(
     life: i32,
     age: i32,
     multiplier: i32,
+    rng: &mut StdRng,
 ) -> (i32, i32) {
-    let mut rng = rand::thread_rng();
     let (dx, dy): (i32, i32);
 
     match branch_type {
@@ -155,13 +157,15 @@ pub(crate) fn choose_string(
 }
 
 pub struct Style {
-    attribute: Attribute,
-    foreground_color: Color,
-    background_color: Color,
+    pub attribute: Attribute,
+    pub foreground_color: Color,
+    pub background_color: Color,
 }
 
-pub(crate) fn choose_color(branch_type: &BranchType) -> Result<Style, std::io::Error> {
-    let mut rng = rand::thread_rng();
+pub(crate) fn choose_color(
+    branch_type: &BranchType,
+    rng: &mut StdRng,
+) -> Result<Style, std::io::Error> {
     let mut stdout = stdout();
 
     // Default background color
@@ -175,12 +179,6 @@ pub(crate) fn choose_color(branch_type: &BranchType) -> Result<Style, std::io::E
     match branch_type {
         BranchType::Trunk | BranchType::ShootLeft | BranchType::ShootRight => {
             if rng.gen_range(0..2) == 0 {
-                execute!(
-                    stdout,
-                    SetAttribute(Attribute::Bold),
-                    SetForegroundColor(Color::AnsiValue(11)),
-                    SetBackgroundColor(bg),
-                )?;
                 style.attribute = Attribute::Bold;
                 style.foreground_color = Color::AnsiValue(11);
             } else {
@@ -318,4 +316,16 @@ pub fn create_message_window(message: &str) -> Result<(), Box<dyn Error>> {
     stdout.flush()?;
 
     Ok(())
+}
+
+pub fn check_key_press() -> bool {
+    if event::poll(Duration::from_millis(0)).unwrap() {
+        return true;
+        // if let Event::Key(key_event) = event::read().unwrap() {
+        //     if key_event.code == KeyCode::Char('q') {
+        //         return true;
+        //     }
+        // }
+    }
+    false
 }

@@ -2,15 +2,21 @@ pub mod utility;
 use crossterm::{
     cursor::{self, MoveTo},
     execute,
-    style::{Color, Colors, Print, SetColors},
-    terminal::{self},
+    style::{
+        Color, Colors, Print, SetAttribute, SetBackgroundColor, SetColors, SetForegroundColor,
+    },
+    terminal::{self, Clear},
     QueueableCommand,
 };
-use rand::Rng;
-use std::io::{stdout, Write};
-use utility::{choose_color, choose_string, set_deltas};
+use rand::{rngs::StdRng, Rng};
+use std::{
+    io::{stdout, Write},
+    thread,
+    time::{Duration, Instant},
+};
+use utility::{check_key_press, choose_color, choose_string, set_deltas};
 
-use crate::Config;
+use crate::{base::draw_base, Config};
 
 use self::utility::Style;
 
@@ -35,7 +41,7 @@ struct Counters {
     tree_bottom: u16,
 }
 
-pub fn grow_tree(config: &Config) {
+pub fn grow_tree(config: &Config, rng: &mut StdRng) -> Vec<Val> {
     let mut stdout = stdout();
     let (max_x, mut max_y) = terminal::size().unwrap();
     max_y = match config.base {
@@ -49,7 +55,7 @@ pub fn grow_tree(config: &Config) {
         shoots: 0,
         branches: 0,
         // Initialize shoot counter to a random value
-        shoot_counter: (rand::random::<i32>() % 3) + 1,
+        shoot_counter: (rng.gen::<i32>() % 3) + 1,
         tree_bottom: max_y,
     };
 
@@ -62,6 +68,8 @@ pub fn grow_tree(config: &Config) {
         .unwrap();
     }
 
+    let mut tree = Vec::new();
+
     // Recursively grow tree trunk and branches
     branch(
         config,
@@ -70,14 +78,24 @@ pub fn grow_tree(config: &Config) {
         (max_x / 2) as i32,
         BranchType::Trunk,
         config.life,
+        &mut tree,
+        rng,
     );
+
+    tree
 }
 
 pub struct Val {
     pub style: Style,
     pub char: String,
-    pub x: u16,
-    pub y: u16,
+    pub x: i32,
+    pub y: i32,
+    pub dx: i32,
+    pub dy: i32,
+    pub life: i32,
+    pub branch_type: String,
+    pub shoots: i32,
+    pub shoot_cooldown: i32,
 }
 
 fn branch(
@@ -87,26 +105,19 @@ fn branch(
     mut x: i32,
     branch_type: BranchType,
     mut life: i32,
+    tree: &mut Vec<Val>,
+    rng: &mut StdRng,
 ) {
-    let mut rng = rand::thread_rng();
-    let mut stdout = stdout();
     counters.branches += 1;
     let mut shoot_cooldown = config.multiplier;
 
     // This is a highly simplified loop to mimic the growth logic
     while life > 0 {
-        if config.verbose {
-            stdout
-                .queue(MoveTo(5, 3))
-                .unwrap()
-                .queue(Print(format!("starting life: {}", life)))
-                .unwrap();
-        }
         // Decrement life
         life -= 1;
         let age = config.life - life;
 
-        let (dx, mut dy) = set_deltas(&branch_type, life, age, config.multiplier);
+        let (dx, mut dy) = set_deltas(&branch_type, life, age, config.multiplier, rng);
         let (max_x, max_y) = terminal::size().unwrap();
 
         if dy > 0 && y > (counters.tree_bottom as i32 - 1) {
@@ -118,13 +129,13 @@ fn branch(
         }
 
         if life < 3 {
-            branch(config, counters, y, x, BranchType::Dead, life);
+            branch(config, counters, y, x, BranchType::Dead, life, tree, rng);
         } else {
             match branch_type {
                 BranchType::Trunk | BranchType::ShootLeft | BranchType::ShootRight
                     if life < (config.multiplier + 2) =>
                 {
-                    branch(config, counters, y, x, BranchType::Dying, life);
+                    branch(config, counters, y, x, BranchType::Dying, life, tree, rng);
                 }
                 BranchType::Trunk
                     if (rng.gen_range(0..3) == 0 || life % config.multiplier == 0) =>
@@ -132,25 +143,36 @@ fn branch(
                     if rng.gen_range(0..8) == 0 && life > 7 {
                         shoot_cooldown = config.multiplier * 2;
                         let random_life = life + rng.gen_range(-2..3);
-                        branch(config, counters, y, x, BranchType::Trunk, random_life);
+                        branch(
+                            config,
+                            counters,
+                            y,
+                            x,
+                            BranchType::Trunk,
+                            random_life,
+                            tree,
+                            rng,
+                        );
                     } else if shoot_cooldown <= 0 {
                         shoot_cooldown = config.multiplier * 2;
                         let shoot_life = life + config.multiplier;
                         counters.shoots += 1;
                         counters.shoot_counter += 1;
-                        if config.verbose {
-                            let _ = execute!(
-                                stdout,
-                                cursor::MoveTo(5, 4),
-                                Print(format!("shoots: {:02}", counters.shoots)),
-                            );
-                        }
                         let shoot_direction = if counters.shoot_counter % 2 == 0 {
                             BranchType::ShootLeft
                         } else {
                             BranchType::ShootRight
                         };
-                        branch(config, counters, y, x, shoot_direction, shoot_life);
+                        branch(
+                            config,
+                            counters,
+                            y,
+                            x,
+                            shoot_direction,
+                            shoot_life,
+                            tree,
+                            rng,
+                        );
                     }
                 }
                 _ => {}
@@ -158,39 +180,6 @@ fn branch(
         }
 
         shoot_cooldown -= 1;
-
-        if config.verbose {
-            let type_str = match branch_type {
-                BranchType::Trunk => "Trunk",
-                BranchType::ShootLeft => "ShootLeft",
-                BranchType::ShootRight => "ShootRight",
-                BranchType::Dying => "Dying",
-                BranchType::Dead => "Dead",
-            };
-
-            // Queueing the commands instead of executing them immediately
-            // This allows for batching the writes, which can be more efficient
-            stdout
-                .queue(MoveTo(5, 5))
-                .unwrap()
-                .queue(Print(format!("dx: {:02}", dx)))
-                .unwrap()
-                .queue(MoveTo(5, 6))
-                .unwrap()
-                .queue(Print(format!("dy: {:02}", dy)))
-                .unwrap()
-                .queue(MoveTo(5, 7))
-                .unwrap()
-                .queue(Print(format!("type: {}", type_str)))
-                .unwrap()
-                .queue(MoveTo(5, 8))
-                .unwrap()
-                .queue(Print(format!("shootCooldown: {:3}", shoot_cooldown)))
-                .unwrap();
-
-            // Flush the stdout to apply the queued operations
-            stdout.flush().unwrap();
-        }
 
         // Update x and y for the next iteration
         x += dx;
@@ -203,12 +192,99 @@ fn branch(
         // Drawing the branch part
         let branch_str = choose_string(config, &branch_type, life, dx, dy);
         // Example to set color, adjust as needed
-        let _style = choose_color(&branch_type).unwrap();
-        execute!(stdout, MoveTo(x as u16, y as u16), Print(branch_str),).unwrap();
+        let style = choose_color(&branch_type, rng).unwrap();
+        let type_str = match branch_type {
+            BranchType::Trunk => "Trunk",
+            BranchType::ShootLeft => "ShootLeft",
+            BranchType::ShootRight => "ShootRight",
+            BranchType::Dying => "Dying",
+            BranchType::Dead => "Dead",
+        };
+        let val = Val {
+            x,
+            y,
+            style,
+            char: branch_str,
+            branch_type: type_str.into(),
+            dx,
+            dy,
+            life,
+            shoots: counters.shoots,
+            shoot_cooldown,
+        };
+        tree.push(val);
+    }
+}
+pub fn draw_tree(config: &Config, tree: &Vec<Val>) {
+    let mut stdout = stdout();
+    for val in tree {
+        if config.verbose {
+            // Queueing the commands instead of executing them immediately
+            // This allows for batching the writes, which can be more efficient
+            stdout
+                .queue(MoveTo(5, 3))
+                .unwrap()
+                .queue(Print(format!("life: {}", val.life)))
+                .unwrap()
+                .queue(MoveTo(5, 4))
+                .unwrap()
+                .queue(Print(format!("shoots: {:02}", val.shoots)))
+                .unwrap()
+                .queue(MoveTo(5, 5))
+                .unwrap()
+                .queue(Print(format!("dx: {:02}", val.dx)))
+                .unwrap()
+                .queue(MoveTo(5, 6))
+                .unwrap()
+                .queue(Print(format!("dy: {:02}", val.dy)))
+                .unwrap()
+                .queue(MoveTo(5, 7))
+                .unwrap()
+                .queue(Print(format!("type: {}", val.branch_type)))
+                .unwrap()
+                .queue(MoveTo(5, 8))
+                .unwrap()
+                .queue(Print(format!("shootCooldown: {:3}", val.shoot_cooldown)))
+                .unwrap();
+
+            // Flush the stdout to apply the queued operations
+            stdout.flush().unwrap();
+        }
+
+        let _ = execute!(
+            stdout,
+            SetAttribute(val.style.attribute),
+            SetForegroundColor(val.style.foreground_color),
+            SetBackgroundColor(val.style.background_color),
+        );
+        let _ = execute!(
+            stdout,
+            MoveTo(val.x as u16, val.y as u16),
+            Print(val.char.clone()),
+        );
         // reset color
-        execute!(stdout, SetColors(Colors::new(Color::Reset, Color::Reset)),).unwrap();
+        let _ = execute!(stdout, SetColors(Colors::new(Color::Reset, Color::Reset)),);
         if config.live {
-            std::thread::sleep(std::time::Duration::from_millis(50));
+            let start = Instant::now();
+            let mut finished = false;
+            while start.elapsed() < Duration::from_secs_f64(config.time) {
+                if check_key_press() {
+                    println!("'q' key pressed, exiting...");
+                    finished = true;
+                    break;
+                }
+                thread::sleep(Duration::from_millis(50)); // Sleep to avoid busy-waiting
+            }
+
+            if finished {
+                return;
+            }
         }
     }
+}
+
+pub fn init(args: &Config) {
+    let mut stdout = stdout();
+    execute!(stdout, Clear(terminal::ClearType::All)).unwrap();
+    draw_base(args);
 }

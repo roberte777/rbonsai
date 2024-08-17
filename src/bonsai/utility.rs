@@ -17,6 +17,12 @@ use crate::Config;
 
 use super::BranchType;
 
+pub struct Style {
+    pub attribute: Attribute,
+    pub foreground_color: Color,
+    pub background_color: Color,
+}
+
 pub(crate) fn set_deltas(
     branch_type: &BranchType,
     life: i32,
@@ -154,12 +160,6 @@ pub(crate) fn choose_string(
     }
 
     branch_str
-}
-
-pub struct Style {
-    pub attribute: Attribute,
-    pub foreground_color: Color,
-    pub background_color: Color,
 }
 
 pub(crate) fn choose_color(

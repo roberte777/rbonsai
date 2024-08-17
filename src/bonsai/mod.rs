@@ -41,6 +41,24 @@ struct Counters {
     tree_bottom: u16,
 }
 
+pub struct Val {
+    pub style: Style,
+    pub char: String,
+    pub pos: Position,
+    pub dx: i32,
+    pub dy: i32,
+    pub life: i32,
+    pub branch_type: String,
+    pub shoots: i32,
+    pub shoot_cooldown: i32,
+}
+
+#[derive(Copy, Clone)]
+pub struct Position {
+    pub x: i32,
+    pub y: i32,
+}
+
 pub fn grow_tree(config: &Config, rng: &mut StdRng) -> Vec<Val> {
     let mut stdout = stdout();
     let (max_x, mut max_y) = terminal::size().unwrap();
@@ -74,39 +92,27 @@ pub fn grow_tree(config: &Config, rng: &mut StdRng) -> Vec<Val> {
     branch(
         config,
         &mut counters,
-        max_y as i32,
-        (max_x / 2) as i32,
-        BranchType::Trunk,
-        config.life,
         &mut tree,
         rng,
+        Position {
+            x: (max_x / 2) as i32,
+            y: max_y as i32,
+        },
+        BranchType::Trunk,
+        config.life,
     );
 
     tree
 }
 
-pub struct Val {
-    pub style: Style,
-    pub char: String,
-    pub x: i32,
-    pub y: i32,
-    pub dx: i32,
-    pub dy: i32,
-    pub life: i32,
-    pub branch_type: String,
-    pub shoots: i32,
-    pub shoot_cooldown: i32,
-}
-
 fn branch(
     config: &Config,
     counters: &mut Counters,
-    mut y: i32,
-    mut x: i32,
-    branch_type: BranchType,
-    mut life: i32,
     tree: &mut Vec<Val>,
     rng: &mut StdRng,
+    mut pos: Position,
+    branch_type: BranchType,
+    mut life: i32,
 ) {
     counters.branches += 1;
     let mut shoot_cooldown = config.multiplier;
@@ -120,22 +126,22 @@ fn branch(
         let (dx, mut dy) = set_deltas(&branch_type, life, age, config.multiplier, rng);
         let (max_x, max_y) = terminal::size().unwrap();
 
-        if dy > 0 && y > (counters.tree_bottom as i32 - 1) {
+        if dy > 0 && pos.y > (counters.tree_bottom as i32 - 1) {
             dy -= 1;
         } // reduce dy if too close to the ground
           // Ensure x and y are within terminal bounds
-        if x < 0 || x as u16 >= max_x || y < 0 || y as u16 >= max_y {
+        if pos.x < 0 || pos.x as u16 >= max_x || pos.y < 0 || pos.y as u16 >= max_y {
             break;
         }
 
         if life < 3 {
-            branch(config, counters, y, x, BranchType::Dead, life, tree, rng);
+            branch(config, counters, tree, rng, pos, BranchType::Dead, life);
         } else {
             match branch_type {
                 BranchType::Trunk | BranchType::ShootLeft | BranchType::ShootRight
                     if life < (config.multiplier + 2) =>
                 {
-                    branch(config, counters, y, x, BranchType::Dying, life, tree, rng);
+                    branch(config, counters, tree, rng, pos, BranchType::Dying, life);
                 }
                 BranchType::Trunk
                     if (rng.gen_range(0..3) == 0 || life % config.multiplier == 0) =>
@@ -146,12 +152,11 @@ fn branch(
                         branch(
                             config,
                             counters,
-                            y,
-                            x,
-                            BranchType::Trunk,
-                            random_life,
                             tree,
                             rng,
+                            pos,
+                            BranchType::Trunk,
+                            random_life,
                         );
                     } else if shoot_cooldown <= 0 {
                         shoot_cooldown = config.multiplier * 2;
@@ -166,12 +171,11 @@ fn branch(
                         branch(
                             config,
                             counters,
-                            y,
-                            x,
-                            shoot_direction,
-                            shoot_life,
                             tree,
                             rng,
+                            pos,
+                            shoot_direction,
+                            shoot_life,
                         );
                     }
                 }
@@ -182,10 +186,10 @@ fn branch(
         shoot_cooldown -= 1;
 
         // Update x and y for the next iteration
-        x += dx;
-        y += dy;
+        pos.x += dx;
+        pos.y += dy;
 
-        if x < 0 || x as u16 >= max_x || y < 0 || y as u16 >= max_y {
+        if pos.x < 0 || pos.x as u16 >= max_x || pos.y < 0 || pos.y as u16 >= max_y {
             continue;
         }
 
@@ -201,8 +205,7 @@ fn branch(
             BranchType::Dead => "Dead",
         };
         let val = Val {
-            x,
-            y,
+            pos,
             style,
             char: branch_str,
             branch_type: type_str.into(),
@@ -259,7 +262,7 @@ pub fn draw_tree(config: &Config, tree: &Vec<Val>) {
         );
         let _ = execute!(
             stdout,
-            MoveTo(val.x as u16, val.y as u16),
+            MoveTo(val.pos.x as u16, val.pos.y as u16),
             Print(val.char.clone()),
         );
         // reset color

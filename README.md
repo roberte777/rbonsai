@@ -9,7 +9,7 @@ also configurable via CLI arguments - see [usage](#usage). It can print a static
 tree to your terminal, or you can watch it grow live. There is also a screensaver
 mode to repeatedly grow trees!
 
-# Installation
+## Installation
 
 `rbonsai` is available on crates.io. To install with Cargo:
 
@@ -17,7 +17,7 @@ mode to repeatedly grow trees!
 cargo install rbonsai --locked
 ```
 
-# Usage
+## Usage
 
 ```
 Usage: ronsai [OPTIONS]
@@ -39,7 +39,7 @@ Options:
   -V, --version                  Print version
 ```
 
-# Add to `.bashrc`
+## Add to `.bashrc`
 
 For a new bonsai tree every time you open a terminal, add the following to the
 end of your ~/.bashrc:
@@ -48,12 +48,12 @@ end of your ~/.bashrc:
 cbonsai -p
 ```
 
-# Missing Features
+## Missing Features
 
 `rbonsai` does not have support for loading or saving to a file as of yet. It
 also does not have support for providing your of leave characters.
 
-# Why Write This?
+## Why Write This?
 
 I had some issues installing cbonsai on one of my machines. I thought it was a
 cool algorithm and wrote this to learn more about it. Additionally, I wanted to
@@ -61,7 +61,7 @@ use Crossterm for something to learn more about how it works. I also have plans
 for some newer features that I will add as soon as I complete the port of the 
 original.
 
-# Credits
+## Credits
 
 This project is a port of [`cbonsai`](https://gitlab.com/jallbrit/cbonsai) into
 Rust. Check it out if you want some of the missing features or would rather use

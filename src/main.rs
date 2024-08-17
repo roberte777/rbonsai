@@ -21,7 +21,13 @@ use ronsai::{
 };
 
 fn main() {
-    let args = Config::parse();
+    let mut args = Config::parse();
+
+    if args.screensaver {
+        args.live = true;
+        args.infinite = true;
+    }
+
     let mut stdout = stdout();
 
     let seed = args.seed.unwrap_or_else(|| {

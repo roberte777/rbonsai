@@ -321,11 +321,6 @@ pub fn create_message_window(message: &str) -> Result<(), Box<dyn Error>> {
 pub fn check_key_press() -> bool {
     if event::poll(Duration::from_millis(0)).unwrap() {
         return true;
-        // if let Event::Key(key_event) = event::read().unwrap() {
-        //     if key_event.code == KeyCode::Char('q') {
-        //         return true;
-        //     }
-        // }
     }
     false
 }

@@ -6,7 +6,7 @@ use std::{
 
 use crossterm::{
     cursor::MoveTo,
-    event::{self, Event, KeyCode},
+    event::{self},
     execute, queue,
     style::{Attribute, Color, Print, SetAttribute, SetBackgroundColor, SetForegroundColor},
     terminal::size,

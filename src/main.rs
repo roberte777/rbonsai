@@ -7,14 +7,12 @@ use std::{
 use clap::Parser;
 use crossterm::{
     cursor::{self, MoveTo},
-    event::{self, Event, KeyCode},
+    event::{self, Event},
     execute,
-    style::Print,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use rand::{rngs::StdRng, SeedableRng};
 use ronsai::{
-    base::draw_base,
     bonsai::{
         draw_tree, grow_tree, init,
         utility::{check_key_press, create_message_window},

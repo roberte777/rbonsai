@@ -12,7 +12,7 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use rand::{rngs::StdRng, SeedableRng};
-use ronsai::{
+use rbonsai::{
     bonsai::{
         draw_tree, grow_tree, init,
         utility::{check_key_press, create_message_window},

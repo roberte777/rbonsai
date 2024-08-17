@@ -1,7 +1,14 @@
 [package]
-name = "ronsai"
+name = "rbonsai"
 version = "0.1.0"
 edition = "2021"
+authors = ["Ethan Wilkes <rewilkes0041@gmail.com>"]
+description = "A terminal bonsai tree generator"
+documentation = "https://docs.rs/rbonsai"
+keywords = ["bonsai", "rbonsai", "cbonsai"]
+license = "GPL-3.0-or-later"
+repository = "https://github.com/roberte777/rbonsai"
+rust-version = "1.80"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

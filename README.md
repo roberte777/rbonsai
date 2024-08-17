@@ -45,7 +45,7 @@ For a new bonsai tree every time you open a terminal, add the following to the
 end of your ~/.bashrc:
 
 ```bash
-cbonsai -p
+rbonsai -p
 ```
 
 ## Missing Features

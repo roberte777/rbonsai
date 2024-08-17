@@ -20,7 +20,7 @@ cargo install rbonsai --locked
 ## Usage
 
 ```
-Usage: ronsai [OPTIONS]
+Usage: rbonsai [OPTIONS]
 
 Options:
   -l, --live                     Whether the tree generation should pause after each step to allow the user to watch it grow

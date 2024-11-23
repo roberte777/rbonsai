@@ -6,7 +6,7 @@ use std::{
 
 use crossterm::{
     cursor::MoveTo,
-    event::{self},
+    event::{self, Event, KeyEventKind},
     execute, queue,
     style::{Attribute, Color, Print, SetAttribute, SetBackgroundColor, SetForegroundColor},
     terminal::size,
@@ -319,8 +319,29 @@ pub fn create_message_window(message: &str) -> Result<(), Box<dyn Error>> {
 }
 
 pub fn check_key_press() -> bool {
-    if event::poll(Duration::from_millis(0)).unwrap() {
-        return true;
+    match event::poll(Duration::from_millis(0)) {
+        // if there was an error getting the event, we exit
+        // program so return true
+        Err(_) => true,
+        // if there wasn't an error getting the event
+        Ok(has_event) => {
+            // if no event, key not pressed
+            if !has_event {
+                return false;
+            }
+            match event::read() {
+                // if there was an error reading the event, exit program
+                Err(_) => true,
+                Ok(event) => {
+                    // otherwise, exit if event is key press
+                    if let Event::Key(key_event) = event {
+                        if let KeyEventKind::Press = key_event.kind {
+                            return true;
+                        }
+                    }
+                    false
+                }
+            }
+        }
     }
-    false
 }

@@ -7,7 +7,7 @@ use std::{
 use clap::Parser;
 use crossterm::{
     cursor::{self, MoveTo},
-    event::{self, Event},
+    event::{self, Event, KeyEventKind},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
@@ -89,9 +89,25 @@ fn main() {
         }
         execute!(stdout, MoveTo(0, rows - 1),).unwrap();
         println!();
-    } else if let Event::Key(_) = event::read().unwrap() {
+    } else {
+        loop {
+            match event::read() {
+                Ok(event) => {
+                    // break if key event
+                    if let Event::Key(key_event) = event {
+                        if let KeyEventKind::Press = key_event.kind {
+                            break;
+                        }
+                    }
+                }
+                Err(_) => {
+                    break;
+                }
+            }
+        }
         execute!(stdout, LeaveAlternateScreen).unwrap();
     }
+
     // move cursor to bottom of terminal
     execute!(stdout, MoveTo(0, rows - 1),).unwrap();
     let _ = disable_raw_mode();

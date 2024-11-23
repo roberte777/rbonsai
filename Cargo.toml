@@ -1,6 +1,6 @@
 [package]
 name = "rbonsai"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 authors = ["Ethan Wilkes <rewilkes0041@gmail.com>"]
 description = "A terminal bonsai tree generator"

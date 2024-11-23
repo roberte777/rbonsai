@@ -42,6 +42,12 @@ fn main() {
     enable_raw_mode().unwrap();
     execute!(stdout, cursor::Hide).unwrap();
     execute!(stdout, EnterAlternateScreen).unwrap();
+
+    // Flush any pending events
+    while event::poll(Duration::from_millis(10)).unwrap() {
+        let _ = event::read();
+    }
+
     let last_tree = loop {
         init(&args);
         let tree = grow_tree(&args, &mut rng);

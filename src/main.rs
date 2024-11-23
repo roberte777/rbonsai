@@ -48,14 +48,24 @@ fn main() {
         let _ = event::read();
     }
 
+    let mut should_exit: bool;
+
     let last_tree = loop {
         init(&args);
         let tree = grow_tree(&args, &mut rng);
-        draw_tree(&args, &tree);
+
+        // if the user exited before the tree is finished being drawn, should
+        // exit program
+        should_exit = !draw_tree(&args, &tree);
+
+        if should_exit {
+            break tree;
+        }
 
         if let Some(message) = &args.message {
             create_message_window(message).unwrap();
         }
+
         if !args.infinite {
             break tree;
         }
@@ -70,12 +80,15 @@ fn main() {
         }
 
         if finished {
+            should_exit = true;
             break tree;
         }
     };
 
     let (_, rows) = crossterm::terminal::size().unwrap();
-    if args.print {
+    if should_exit {
+        execute!(stdout, LeaveAlternateScreen).unwrap();
+    } else if args.print {
         args.live = false;
         execute!(stdout, LeaveAlternateScreen).unwrap();
         for _ in 0..rows {
@@ -90,17 +103,10 @@ fn main() {
         execute!(stdout, MoveTo(0, rows - 1),).unwrap();
         println!();
     } else {
-        loop {
-            match event::read() {
-                Ok(event) => {
-                    // break if key event
-                    if let Event::Key(key_event) = event {
-                        if let KeyEventKind::Press = key_event.kind {
-                            break;
-                        }
-                    }
-                }
-                Err(_) => {
+        while let Ok(event) = event::read() {
+            // break if key event
+            if let Event::Key(key_event) = event {
+                if let KeyEventKind::Press = key_event.kind {
                     break;
                 }
             }

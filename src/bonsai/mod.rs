@@ -218,7 +218,10 @@ fn branch(
         tree.push(val);
     }
 }
-pub fn draw_tree(config: &Config, tree: &Vec<Val>) {
+
+// returns true if the tree finished drawing. Returns false if it didn't and
+// the user chose to exit early
+pub fn draw_tree(config: &Config, tree: &Vec<Val>) -> bool {
     let mut stdout = stdout();
     for val in tree {
         if config.verbose {
@@ -279,10 +282,12 @@ pub fn draw_tree(config: &Config, tree: &Vec<Val>) {
             }
 
             if finished {
-                return;
+                return false;
             }
         }
     }
+
+    true
 }
 
 pub fn init(args: &Config) {

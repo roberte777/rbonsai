@@ -32,7 +32,7 @@ Options:
   -b, --base <BASE>              Ascii art plant base to use [default: 1]
   -M, --multiplier <MULTIPLIER>  The branch multiplier; higher -> less branches [default: 3]
   -L, --life <LIFE>              The starting life of the tree higher -> bigger tree [default: 32]
-  -p, --print                    The starting life of the tree higher -> bigger tree
+  -p, --print                    print tree to terminal when finished
   -s, --seed <SEED>              random number seed for reproducable trees
   -v, --verbose                  Whether there should be debug prints
   -h, --help                     Print help

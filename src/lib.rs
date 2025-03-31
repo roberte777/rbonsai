@@ -35,8 +35,7 @@ pub struct Config {
     /// higher -> bigger tree
     #[arg(short = 'L', long, default_value_t = 32)]
     pub life: i32,
-    /// The starting life of the tree
-    /// higher -> bigger tree
+    /// print tree to terminal when finished
     #[arg(short, long, default_value_t = false)]
     pub print: bool,
     /// random number seed for reproducable trees

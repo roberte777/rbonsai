@@ -35,10 +35,10 @@ pub struct Config {
     /// higher -> bigger tree
     #[arg(short = 'L', long, default_value_t = 32)]
     pub life: i32,
-    /// print tree to terminal when finished
+    /// Print tree to terminal when finished
     #[arg(short, long, default_value_t = false)]
     pub print: bool,
-    /// random number seed for reproducable trees
+    /// Random number seed for reproducable trees
     #[arg(short, long)]
     pub seed: Option<u64>,
     /// Whether there should be debug prints
